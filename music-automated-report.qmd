@@ -1,0 +1,125 @@
+---
+title: "Weekly Top Artists - Automated Report"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+## Introduction 
+
+This report provides an automated analysis of the top artists from the past week based on total plays. The data is sourced directly from an API and is visualized using an interactive plot. The goal is to provide a quick yet insightful overview of the most popular artists during the week.
+
+We start by fetching the data from the [music-to-scrape](https://music-to-scrape.org/) API. Then, we visualize it using Python.
+
+## Extracting data from API
+
+To begin, we retrieve the latest data on the top 5 artists from the API. The data includes the artist names and the total number of plays they received over the past week.
+
+*The code:*
+
+- The function `get_top_artists_dataframe()` is defined to extract the top 5 artists from the API. 
+    - It begins by sending a GET request to the API endpoint. If the request is successful, the JSON data is parsed to retrieve the artist names and their play counts. 
+    - The `unix_start` timestamp is converted to a readable date format to determine the week number for the report.
+    - The data is structured into a Pandas DataFrame, making it easier to manipulate and visualize later on.
+    - If the API request fails, the function will print an error message with the HTTP status code.
+- The data from the most recent week is shown with running the function `get_top_artists_dataframe()`
+
+
+```{python}
+# Import the required libraries
+import requests
+import json
+import pandas as pd
+import matplotlib.pyplot as plt
+from datetime import datetime 
+import plotly.express as px
+
+# Function to get top 5 artists with total plays
+
+def get_top_artists_dataframe():
+    # Specify the URL of the API
+    api_url = "https://api.music-to-scrape.org"
+    
+    # Send an HTTP GET request to the API
+    response = requests.get(api_url+'/charts/top-artists')
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Parse the JSON response
+        data = response.json()
+        
+        # Extract the chart data and timestamps
+        artists_data = data.get('chart', [])
+        unix_start = data.get('unix_start')
+
+        # Convert the unix_start timestamp to a datetime object
+        start_date = datetime.utcfromtimestamp(unix_start)
+        week_number = start_date.isocalendar().week
+        
+        # Create lists to hold artist names and plays
+        artist_names = []
+        total_plays = []
+        
+        # Populate the lists with data
+        for item in artists_data:
+            artist_names.append(item['name'])
+            total_plays.append(item['plays'])
+        
+        # Create a DataFrame from the lists
+        df = pd.DataFrame({
+            'Artist': artist_names,
+            'Total Plays': total_plays,
+            'Week Number': week_number
+        })
+        return df
+    else:
+        print("Failed to retrieve data. Status code:", response.status_code)
+        return None
+
+# Dataset 
+get_top_artists_dataframe()
+```
+
+
+## Create interactive barplot
+
+The next step is to visualize the top 5 artists. An interactive bar plot (see@bar-plot) is created to provide a dynamic view of the data, allowing users to engage with the chart by hovering over the bars to see more details about the aritsts and their total play counts. 
+
+*The code:*
+
+- The `interactive_bar_plot()` function generates an interactive bar chart using the `Plotly` library. 
+    - It ensures that the data is present
+    - It retrieves the week number for context.
+    - The data is sorted by total plays to highlight the most popular artists at the top.
+    - A title dynamically reflects the week number, ensuring that each week's report is accurately labeled. 
+
+
+
+```{python}
+#| label: bar-plot
+
+def interactive_bar_plot(df):
+    if df is not None:
+
+        # Get week number from the DataFrame (to include in dynamic title)
+        week_number = get_top_artists_dataframe()["Week Number"].iloc[0]
+
+        # Sort the DataFrame by 'Total Plays' in descending order 
+        df = df.sort_values(by='Total Plays', ascending=False)
+
+        # Create an interactive bar chart with Plotly
+        fig = px.bar(get_top_artists_dataframe(), x='Total Plays', y='Artist', 
+                 title=f'Total Plays for Top 5 Artists - Week {week_number}',
+                 labels={'Total Plays':'Total Plays'},
+                 hover_data={'Artist':True, 'Total Plays':True, 'Week Number':False})
+
+        fig.update_layout(xaxis_title='Artist', yaxis_title='Total Plays',
+                      xaxis_tickangle=-45, template='plotly_white')
+        fig.show()
+
+# Create plot with recent data extracted from API
+interactive_bar_plot(get_top_artists_dataframe())
+
+```
+
