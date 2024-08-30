@@ -1,0 +1,44 @@
+[
+  {
+    "objectID": "music-automated-report.html",
+    "href": "music-automated-report.html",
+    "title": "Weekly Top Artists",
+    "section": "",
+    "text": "This report provides an automated analysis of the top artists from the past week based on total plays. The data is sourced directly from an API and is visualized using an interactive plot. The goal is to provide a quick yet insightful overview of the most popular artists during the week.\nWe start by fetching the data from the music-to-scrape API. Then, we visualize it using Python."
+  },
+  {
+    "objectID": "music-automated-report.html#introduction",
+    "href": "music-automated-report.html#introduction",
+    "title": "Weekly Top Artists",
+    "section": "",
+    "text": "This report provides an automated analysis of the top artists from the past week based on total plays. The data is sourced directly from an API and is visualized using an interactive plot. The goal is to provide a quick yet insightful overview of the most popular artists during the week.\nWe start by fetching the data from the music-to-scrape API. Then, we visualize it using Python."
+  },
+  {
+    "objectID": "music-automated-report.html#extracting-data-from-api",
+    "href": "music-automated-report.html#extracting-data-from-api",
+    "title": "Weekly Top Artists",
+    "section": "Extracting data from API",
+    "text": "Extracting data from API\nTo begin, we retrieve the latest data on the top 5 artists from the API. The data includes the artist names and the total number of plays they received over the past week.\nThe code:\n\nThe function get_top_artists_dataframe() is defined to extract the top 5 artists from the API.\n\nIt begins by sending a GET request to the API endpoint. If the request is successful, the JSON data is parsed to retrieve the artist names and their play counts.\nThe unix_start timestamp is converted to a readable date format to determine the week number for the report.\nThe data is structured into a Pandas DataFrame, making it easier to manipulate and visualize later on.\nIf the API request fails, the function will print an error message with the HTTP status code.\n\nThe data from the most recent week is shown with running the function get_top_artists_dataframe()\n\n\n\nCode\n# Import the required libraries\nimport requests\nimport json\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom datetime import datetime \nimport plotly.express as px\n\n# Function to get top 5 artists with total plays\n\ndef get_top_artists_dataframe():\n    # Specify the URL of the API\n    api_url = \"https://api.music-to-scrape.org\"\n    \n    # Send an HTTP GET request to the API\n    response = requests.get(api_url+'/charts/top-artists')\n    \n    # Check if the request was successful\n    if response.status_code == 200:\n        # Parse the JSON response\n        data = response.json()\n        \n        # Extract the chart data and timestamps\n        artists_data = data.get('chart', [])\n        unix_start = data.get('unix_start')\n\n        # Convert the unix_start timestamp to a datetime object\n        start_date = datetime.utcfromtimestamp(unix_start)\n        week_number = start_date.isocalendar().week\n        \n        # Create lists to hold artist names and plays\n        artist_names = []\n        total_plays = []\n        \n        # Populate the lists with data\n        for item in artists_data:\n            artist_names.append(item['name'])\n            total_plays.append(item['plays'])\n        \n        # Create a DataFrame from the lists\n        df = pd.DataFrame({\n            'Artist': artist_names,\n            'Total Plays': total_plays,\n            'Week Number': week_number\n        })\n        return df\n    else:\n        print(\"Failed to retrieve data. Status code:\", response.status_code)\n        return None\n\n# Dataset \nget_top_artists_dataframe()\n\n\n\n\n\n\n\n\n\nArtist\nTotal Plays\nWeek Number\n\n\n\n\n0\nSNOWPATROL\n51\n35\n\n\n1\nMario Rosenstock\n41\n35\n\n\n2\nStevie Ray Vaughan\n40\n35\n\n\n3\nThe Jackson Southernaires\n37\n35\n\n\n4\nMongo Santamaria\n37\n35"
+  },
+  {
+    "objectID": "music-automated-report.html#create-interactive-barplot",
+    "href": "music-automated-report.html#create-interactive-barplot",
+    "title": "Weekly Top Artists",
+    "section": "Create interactive barplot",
+    "text": "Create interactive barplot\nThe next step is to visualize the top 5 artists. An interactive bar plot (see@bar-plot) is created to provide a dynamic view of the data, allowing users to engage with the chart by hovering over the bars to see more details about the aritsts and their total play counts.\nThe code:\n\nThe interactive_bar_plot() function generates an interactive bar chart using the Plotly library.\n\nIt ensures that the data is present\nIt retrieves the week number for context.\nThe data is sorted by total plays to highlight the most popular artists at the top.\nA title dynamically reflects the week number, ensuring that each week’s report is accurately labeled.\n\n\n\n\nCode\ndef interactive_bar_plot(df):\n    if df is not None:\n\n        # Get week number from the DataFrame (to include in dynamic title)\n        week_number = get_top_artists_dataframe()[\"Week Number\"].iloc[0]\n\n        # Sort the DataFrame by 'Total Plays' in descending order \n        df = df.sort_values(by='Total Plays', ascending=False)\n\n        # Create an interactive bar chart with Plotly\n        fig = px.bar(get_top_artists_dataframe(), x='Total Plays', y='Artist', \n                 title=f'Total Plays for Top 5 Artists - Week {week_number}',\n                 labels={'Total Plays':'Total Plays'},\n                 hover_data={'Artist':True, 'Total Plays':True, 'Week Number':False})\n\n        fig.update_layout(xaxis_title='Artist', yaxis_title='Total Plays',\n                      xaxis_tickangle=-45, template='plotly_white')\n        fig.show()\n\n# Create plot with recent data extracted from API\ninteractive_bar_plot(get_top_artists_dataframe())"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Automating Reports with Music To Scrape Data",
+    "section": "",
+    "text": "This is a Quarto website, serving as an example. Navigate to the Weekly Top Artists page for an example report providing an automatic analysis done within Quarto."
+  }
+]
