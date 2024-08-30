@@ -1,0 +1,12 @@
+---
+title: "Automating Reports with Music To Scrape Data"
+---
+
+This is a Quarto website, serving as an example. Navigate to the [Weekly Top Artists page](music-automated-report.qmd) for an example report providing an automatic analysis done within Quarto. 
+
+
+
+
+
+
+
